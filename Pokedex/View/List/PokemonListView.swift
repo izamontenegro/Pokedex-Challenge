@@ -74,3 +74,9 @@ struct PokemonListView: View {
         .refreshable { await viewModel.reload() }
     }
 }
+
+#Preview {
+    NavigationStack {
+        PokemonListView(viewModel: PokemonListViewModel())
+    }
+}

@@ -28,6 +28,9 @@ final class PokemonListViewModel {
     private(set) var state: State = .loading
 
     private let fetchPage: FetchPokemonPageUseCase
+    
+    private var hasNextPage = true
+    private var isLoadingNextPage = false
 
     init() {
         let repository = RemotePokemonRepository(client: URLSessionHTTPClient())
@@ -47,16 +50,52 @@ final class PokemonListViewModel {
         do {
             let page = try await fetchPage.execute(offset: 0)
             let rows = page.items.map(PokemonRowModel.init(summary:))
+            hasNextPage = page.hasNextPage
             state = rows.isEmpty ? .empty : .loaded(rows)
         } catch {
             state = .failure(message: error.localizedDescription)
         }
     }
+    
 
     // MARK: - TODO (Tarefa 1)
     //
     // A lista carrega só a primeira página (20 Pokémon).
     // Este método é chamado pela View a cada linha que aparece na tela.
-    func loadNextPageIfNeeded(displayingRowAt index: Int) async {
+    func loadNextPageIfNeeded(
+        displayingRowAt index: Int
+    ) async {
+        guard case .loaded(let rows) = state else {
+            return
+        }
+
+        let threshold = rows.count - 5
+
+        guard index >= threshold,
+              hasNextPage,
+              !isLoadingNextPage else {
+            return
+        }
+
+        isLoadingNextPage = true
+        defer { isLoadingNextPage = false }
+
+        do {
+            let page = try await fetchPage.execute(
+                offset: rows.count
+            )
+
+            let newRows = page.items.map(
+                PokemonRowModel.init(summary:)
+            )
+
+            let updatedRows = rows + newRows
+
+            hasNextPage = page.hasNextPage
+            state = .loaded(updatedRows)
+
+        } catch {
+            // TODO: ADD PAGINATION ERROR FEEDBACK
+        }
     }
 }
