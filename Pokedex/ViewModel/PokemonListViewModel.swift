@@ -70,34 +70,36 @@ final class PokemonListViewModel {
         guard case .loaded(let rows) = state else {
             return
         }
-
-        let threshold = rows.count - 5
-
+        
+        let threshold = rows.count - 3
+        
         guard index >= threshold,
               hasNextPage,
               !isLoadingNextPage else {
             return
         }
-
+        
         isLoadingNextPage = true
         defer { isLoadingNextPage = false }
-
+        
         do {
             let page = try await fetchPage.execute(
                 offset: rows.count
             )
-
+            
             let newRows = page.items.map(
                 PokemonRowModel.init(summary:)
             )
-
+            
             let updatedRows = rows + newRows
-
+            
             hasNextPage = page.hasNextPage
             state = .loaded(updatedRows)
-
+            
+        } catch let error as NetworkError {
+            paginationErrorMessage = error.localizedDescription
         } catch {
-            paginationErrorMessage = "Não foi possível carregar mais."
+            paginationErrorMessage = "Não foi possível carregar mais Pokémon."
         }
     }
     
