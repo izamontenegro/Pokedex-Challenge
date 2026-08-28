@@ -92,21 +92,12 @@ struct PokemonListView: View {
                 Array(rows.enumerated()),
                 id: \.element.id
             ) { index, row in
-                Button {
-                    // TODO (Tarefa 3): abrir a tela de detalhe deste Pokémon.
-                    notImplemented = "Detalhe de \(row.name)"
-                } label: {
-                    HStack {
-                        PokemonRow(row: row)
 
-                        Image(systemName: "chevron.right")
-                            .font(Theme.Font.caption.bold())
-                            .foregroundStyle(
-                                Theme.Color.secondaryText
-                            )
-                    }
+                NavigationLink(
+                    value: PokemonRoute.detail(id: row.id)
+                ) {
+                    PokemonRow(row: row)
                 }
-                .buttonStyle(.plain)
                 .task {
                     await viewModel.loadNextPageIfNeeded(
                         displayingRowAt: index
