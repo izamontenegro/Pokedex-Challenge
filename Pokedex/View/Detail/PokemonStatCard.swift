@@ -1,7 +1,13 @@
+//
+//  PokemonStatCard.swift
+//  Pokedex
+//
+//  Created by izadora montenegro on 28/08/26.
+//
+
 import SwiftUI
 
 struct PokemonStatCard: View {
-
     let title: String
     let value: Int
 
@@ -11,7 +17,7 @@ struct PokemonStatCard: View {
                 .font(Theme.Font.body)
 
             Text("\(value)")
-                .font(.title)
+                .font(Theme.Font.title)
         }
         .frame(maxWidth: .infinity)
         .frame(height: 140)
@@ -23,4 +29,8 @@ struct PokemonStatCard: View {
                 )
         }
     }
+}
+
+#Preview {
+    PokemonStatCard(title: "HP", value: 78)
 }

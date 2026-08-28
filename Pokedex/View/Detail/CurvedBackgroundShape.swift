@@ -1,3 +1,11 @@
+//
+//  CurvedBackgroundShape.swift
+//  Pokedex
+//
+//  Created by izadora montenegro on 28/08/26.
+//
+import SwiftUI
+
 struct CurvedBackgroundShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
@@ -33,4 +41,10 @@ struct CurvedBackgroundShape: Shape {
 
         return path
     }
+}
+
+#Preview {
+    CurvedBackgroundShape()
+        .ignoresSafeArea(.all)
+        .frame(height: 350)
 }

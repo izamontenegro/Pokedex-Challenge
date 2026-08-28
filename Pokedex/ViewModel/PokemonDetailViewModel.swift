@@ -1,28 +1,19 @@
+//
+//  PokemonDetailViewModel.swift
+//  Pokedex
+//
+//  Created by izadora montenegro on 28/08/26.
+//
+
 import Foundation
+import Observation
 
 @MainActor
 @Observable
 final class PokemonDetailViewModel {
-
-    struct ViewData: Equatable {
-        let name: String
-        let number: String
-        let height: String
-        let weight: String
-        let spriteURL: URL?
-        let types: [String]
-        let hp: Int
-        let attack: Int
-        let defense: Int
-    }
-
-    enum State: Equatable {
-        case loading
-        case loaded(ViewData)
-        case failure(message: String)
-    }
-
-    private(set) var state: State = .loading
+    private(set) var pokemon: PokemonDetail?
+    private(set) var isLoading = false
+    private(set) var errorMessage: String?
 
     private let pokemonID: Int
     private let fetchDetail: FetchPokemonDetailUseCase
@@ -51,54 +42,15 @@ final class PokemonDetailViewModel {
     }
 
     func load() async {
-        state = .loading
+        isLoading = true
+        errorMessage = nil
 
         do {
-            let detail = try await fetchDetail.execute(
-                id: pokemonID
-            )
-
-            state = .loaded(
-                makeViewData(from: detail)
-            )
-
+            pokemon = try await fetchDetail.execute(id: pokemonID)
         } catch {
-            state = .failure(
-                message: error.localizedDescription
-            )
+            errorMessage = error.localizedDescription
         }
-    }
 
-    private func makeViewData(
-        from detail: PokemonDetail
-    ) -> ViewData {
-        ViewData(
-            name: PokemonFormatter.name(detail.name),
-            number: PokemonFormatter.number(detail.id),
-            height: formatHeight(detail.height),
-            weight: formatWeight(detail.weight),
-            spriteURL: detail.spriteURL,
-            types: detail.types,
-            hp: statValue(.hp, in: detail),
-            attack: statValue(.attack, in: detail),
-            defense: statValue(.defense, in: detail)
-        )
-    }
-
-    private func statValue(
-        _ stat: PokemonStat,
-        in detail: PokemonDetail
-    ) -> Int {
-        detail.stats.first {
-            $0.stat == stat
-        }?.value ?? 0
-    }
-
-    private func formatHeight(_ height: Int) -> String {
-        "\(Double(height) / 10)m"
-    }
-
-    private func formatWeight(_ weight: Int) -> String {
-        "\(Double(weight) / 10)kg"
+        isLoading = false
     }
 }

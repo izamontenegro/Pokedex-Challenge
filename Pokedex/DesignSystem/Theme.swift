@@ -12,7 +12,11 @@ enum Theme {
         static let alert = SwiftUI.Color.yellow
 
         /// Cor  representando cada tipo de pokemon
-        static func forPokemonType(_ type: String) -> SwiftUI.Color {
+        static func forPokemonType(_ type: String?) -> SwiftUI.Color {
+            guard let type else {
+                return SwiftUI.Color.gray
+            }
+            
             switch type.lowercased() {
             case "normal":   return SwiftUI.Color(red: 0.66, green: 0.66, blue: 0.47)
             case "fire":     return SwiftUI.Color(red: 0.94, green: 0.50, blue: 0.19)

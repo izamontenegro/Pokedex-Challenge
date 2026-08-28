@@ -7,10 +7,21 @@
 
 import Foundation
 
-enum PokemonStat: String, Equatable {
+enum PokemonStat: String, Equatable, CaseIterable {
     case hp
     case attack
     case defense
+    
+    var title: String {
+        switch self {
+        case .hp:
+            "HP"
+        case .attack:
+            "ATAQUE"
+        case .defense:
+            "DEFESA"
+        }
+    }
 }
 
 struct PokemonStatValue: Equatable {
@@ -26,4 +37,10 @@ struct PokemonDetail: Equatable {
     let spriteURL: URL?
     let types: [String]
     let stats: [PokemonStatValue]
+
+    func statValue(for stat: PokemonStat) -> Int {
+        stats.first {
+            $0.stat == stat
+        }?.value ?? 0
+    }
 }
