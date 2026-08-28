@@ -8,18 +8,6 @@ struct PokemonRowModel: Identifiable, Equatable {
     let spriteURL: URL?
     let types: [String]
     let detailURL: URL
-
-    init(
-        summary: PokemonSummary,
-        detail: PokemonDetail
-    ) {
-        self.id = detail.id
-        self.name = summary.name
-        self.number = String(format: "#%03d", detail.id)
-        self.spriteURL = detail.spriteURL
-        self.types = detail.types
-        self.detailURL = summary.detailURL
-    }
 }
 
 @MainActor
@@ -67,8 +55,16 @@ final class PokemonListViewModel {
         for summary in summaries {
             let detail = try await fetchDetail.execute(url: summary.detailURL)
 
-            rows.append(PokemonRowModel(summary: summary,detail: detail)
+            let row = PokemonRowModel(
+                id: detail.id,
+                name: PokemonNameFormatter.format(summary.name),
+                number: String(format: "#%03d", detail.id),
+                spriteURL: detail.spriteURL,
+                types: detail.types,
+                detailURL: summary.detailURL
             )
+
+            rows.append(row)
         }
 
         return rows
