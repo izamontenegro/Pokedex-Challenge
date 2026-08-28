@@ -1,15 +1,16 @@
 import Foundation
 
-/// Adicione aqui regras de negócio com relação à adição de novos Pokémon no time
-/// Já foi criado aqui a regra "Não deve ser possível adicionar no time um pokemon que já faz parte dele" para servir de exemplo
-/// Você é livre para adicionar quaisquer outras regras que ache válidas
 enum TeamError: LocalizedError, Equatable {
     case alreadyInTeam(name: String)
+    case teamFull
 
     var errorDescription: String? {
         switch self {
         case .alreadyInTeam(let name):
             return "\(name) já está no seu time."
+
+        case .teamFull:
+            return "Seu time já possui 6 Pokémon."
         }
     }
 }
@@ -33,6 +34,10 @@ final class DefaultManageTeamUseCase: ManageTeamUseCase {
         self.repository = repository
     }
 
+    func currentTeam() -> [TeamMember] {
+        repository.load()
+    }
+
     // MARK: - TODO (Tarefa 4)
     //
     // O contrato esperado:
@@ -40,20 +45,44 @@ final class DefaultManageTeamUseCase: ManageTeamUseCase {
     // - `add`: adiciona novo Pokémon no time
     // - `remove`: remove Pokémon do time pelo id
     // - `summary`: ver a documentação de `TeamSummary` em `Model/Team.swift`.
-
-    func currentTeam() -> [TeamMember] {
-        repository.load()
-    }
-
+    
     func add(_ member: TeamMember) throws {
-        fatalError("TODO: Tarefa 4")
+        var members = repository.load()
+
+        guard !members.contains(where: { $0.id == member.id }) else {
+            throw TeamError.alreadyInTeam(name: member.name)
+        }
+
+        guard members.count < Team.maxSize else {
+            throw TeamError.teamFull
+        }
+
+        members.append(member)
+
+        repository.save(members)
     }
 
     func remove(id: Int) {
-        fatalError("TODO: Tarefa 4")
+        var members = repository.load()
+
+        members.removeAll { $0.id == id }
+
+        repository.save(members)
     }
 
     func summary() -> TeamSummary {
-        fatalError("TODO: Tarefa 4")
+        let members = repository.load()
+
+        let coveredTypes = Array(
+            Set(
+                members.flatMap(\.types)
+            )
+        )
+        .sorted()
+
+        return TeamSummary(
+            count: members.count,
+            coveredTypes: coveredTypes
+        )
     }
 }
