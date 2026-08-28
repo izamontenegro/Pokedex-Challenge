@@ -8,7 +8,7 @@
 import Foundation
 
 protocol FetchPokemonDetailUseCase {
-    func execute(url: URL) async throws -> PokemonDetail
+    func execute(id: Int) async throws -> PokemonDetail
 }
 
 final class DefaultFetchPokemonDetailUseCase: FetchPokemonDetailUseCase {
@@ -19,7 +19,9 @@ final class DefaultFetchPokemonDetailUseCase: FetchPokemonDetailUseCase {
         self.repository = repository
     }
 
-    func execute(url: URL) async throws -> PokemonDetail {
-        try await repository.fetchDetail(url: url)
+    func execute(id: Int) async throws -> PokemonDetail {
+        try await repository.fetchDetail(
+            url: PokeAPI.pokemon(id: id)
+        )
     }
 }

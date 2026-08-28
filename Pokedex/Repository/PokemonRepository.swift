@@ -37,16 +37,26 @@ final class RemotePokemonRepository: PokemonRepository {
     }
     
     func fetchDetail(url: URL) async throws -> PokemonDetail {
-        let dto = try await client.get(
-            url,
-            as: PokemonDetailDTO.self
-        )
+        let dto = try await client.get(url, as: PokemonDetailDTO.self)
+
+        let stats = dto.stats.compactMap { statDTO -> PokemonStatValue? in
+            guard let stat = PokemonStat(
+                rawValue: statDTO.stat.name
+            ) else {
+                return nil
+            }
+
+            return PokemonStatValue(stat: stat, value: statDTO.baseStat)
+        }
 
         return PokemonDetail(
             id: dto.id,
             name: dto.name,
+            height: dto.height,
+            weight: dto.weight,
             spriteURL: dto.sprites.frontDefault,
-            types: dto.types.map { $0.type.name }
+            types: dto.types.map { $0.type.name },
+            stats: stats
         )
     }
 }
