@@ -10,8 +10,11 @@ import Foundation
 struct PokemonDetailDTO: Decodable {
     let id: Int
     let name: String
+    let height: Int
+    let weight: Int
     let sprites: SpritesDTO
     let types: [PokemonTypeSlotDTO]
+    let stats: [PokemonStatDTO]
 }
 
 struct SpritesDTO: Decodable {
@@ -25,3 +28,13 @@ struct PokemonTypeSlotDTO: Decodable {
 struct PokemonTypeDTO: Decodable {
     let name: String
 }
+
+struct PokemonStatDTO: Decodable {
+    let baseStat: Int
+    let stat: StatDTO
+}
+
+struct StatDTO: Decodable {
+    let name: String
+}
+
