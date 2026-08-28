@@ -5,7 +5,6 @@
 //  Created by izadora montenegro on 28/08/26.
 //
 
-
 import SwiftUI
 
 struct TeamMemberRow: View {

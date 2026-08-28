@@ -5,7 +5,6 @@ import SwiftUI
 struct PokemonListView: View {
 
     @State private var viewModel: PokemonListViewModel
-    @State private var notImplemented: String?
 
     init(viewModel: PokemonListViewModel) {
         _viewModel = State(initialValue: viewModel)
@@ -27,21 +26,11 @@ struct PokemonListView: View {
         .navigationTitle("Pokédex")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Meu Time") {
-                    // TODO (Tarefa 4): apresentar a tela "Meu Time".
-                    notImplemented = "Meu Time"
-                }
+                NavigationLink(
+                    "Meu Time",
+                    value: PokemonRoute.team
+                )
             }
-        }
-        .alert(
-            notImplemented ?? "",
-            isPresented: .constant(notImplemented != nil)
-        ) {
-            Button("OK") {
-                notImplemented = nil
-            }
-        } message: {
-            Text("Tela ainda não implementada.")
         }
         .task {
             await viewModel.load()

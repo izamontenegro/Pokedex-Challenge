@@ -7,6 +7,7 @@
 import SwiftUI
 
 struct PokemonDetailView: View {
+
     @State private var viewModel: PokemonDetailViewModel
 
     init(viewModel: PokemonDetailViewModel) {
@@ -15,23 +16,41 @@ struct PokemonDetailView: View {
 
     var body: some View {
         content
-            .task {
-                if viewModel.pokemon == nil {
-                    await viewModel.load()
+            .overlay(alignment: .bottom) {
+                if let message = viewModel.teamFeedbackMessage {
+                    FeedbackToast(message: message)
+                        .padding(.bottom, Theme.Spacing.m)
                 }
+            }
+            .animation(
+                .easeInOut,
+                value: viewModel.teamFeedbackMessage
+            )
+            .task {
+                await viewModel.load()
             }
     }
 
     @ViewBuilder
     private var content: some View {
-        if viewModel.isLoading {
+        switch viewModel.state {
+        case .loading:
             StateView(content: .loading)
 
-        } else if let pokemon = viewModel.pokemon {
-            PokemonDetailContentView(pokemon: pokemon)
+        case .loaded(let pokemon):
+            PokemonDetailContentView(
+                pokemon: pokemon,
+                onAddToTeam: {
+                    viewModel.addToTeam()
+                }
+            )
 
-        } else if let errorMessage = viewModel.errorMessage {
-            StateView(content: .failure(message: errorMessage)) {
+        case .failure(let message):
+            StateView(
+                content: .failure(
+                    message: message
+                )
+            ) {
                 Task {
                     await viewModel.load()
                 }
@@ -42,6 +61,7 @@ struct PokemonDetailView: View {
 
 private struct PokemonDetailContentView: View {
     let pokemon: PokemonDetail
+    let onAddToTeam: () -> Void
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -105,7 +125,7 @@ private struct PokemonDetailContentView: View {
 
     private var addToTeamButton: some View {
         Button {
-            // TODO (Tarefa 3): adicionar o Pokémon ao time.
+            onAddToTeam()
         } label: {
             Text("Adicionar ao time")
                 .font(Theme.Font.body)

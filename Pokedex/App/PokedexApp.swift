@@ -2,11 +2,11 @@ import SwiftUI
 
 enum PokemonRoute: Hashable {
     case detail(id: Int)
+    case team
 }
 
 @main
 struct PokedexApp: App {
-    
     var body: some Scene {
         WindowGroup {
             NavigationStack {
@@ -21,10 +21,14 @@ struct PokedexApp: App {
                                     pokemonID: id
                                 )
                             )
+                            
+                        case .team:
+                            PokemonTeamView(
+                                viewModel: PokemonTeamViewModel()
+                            )
                         }
                     }
             }
-            
         }
     }
 }

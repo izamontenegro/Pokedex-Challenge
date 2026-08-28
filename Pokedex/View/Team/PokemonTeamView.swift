@@ -1,3 +1,11 @@
+//
+//  PokemonTeamView.swift
+//  Pokedex
+//
+//  Created by izadora montenegro on 28/08/26.
+//
+
+
 import SwiftUI
 
 struct PokemonTeamView: View {
@@ -69,12 +77,17 @@ struct PokemonTeamView: View {
                             Theme.Color.secondaryText
                         )
 
-                    FlowLayout {
-                        ForEach(
-                            summary.coveredTypes,
-                            id: \.self
-                        ) { type in
-                            PokemonTypeTag(type: type)
+                    ScrollView(
+                        .horizontal,
+                        showsIndicators: false
+                    ) {
+                        HStack(spacing: Theme.Spacing.xs) {
+                            ForEach(
+                                summary.coveredTypes,
+                                id: \.self
+                            ) { type in
+                                PokemonTypeTag(type: type)
+                            }
                         }
                     }
                 }

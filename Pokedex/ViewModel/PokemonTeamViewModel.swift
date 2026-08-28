@@ -1,3 +1,11 @@
+//
+//  PokemonTeamViewModel.swift
+//  Pokedex
+//
+//  Created by izadora montenegro on 28/08/26.
+//
+
+
 import Foundation
 import Observation
 
