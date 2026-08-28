@@ -16,7 +16,7 @@ struct PokemonListView: View {
             content
 
             if let message = viewModel.paginationErrorMessage {
-                FeedbackToastView(message: message)
+                FeedbackToast(message: message)
                     .padding(.bottom, Theme.Spacing.m)
             }
         }

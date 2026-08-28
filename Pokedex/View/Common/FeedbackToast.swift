@@ -1,5 +1,5 @@
 //
-//  FeedbackToastView.swift
+//  FeedbackToast.swift
 //  Pokedex
 //
 //  Created by izadora montenegro on 28/08/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct FeedbackToastView: View {
+struct FeedbackToast: View {
 
     let message: String
 
@@ -39,5 +39,5 @@ struct FeedbackToastView: View {
 }
 
 #Preview {
-    FeedbackToastView(message: "Erro ao carregar dados")
+    FeedbackToast(message: "Erro ao carregar dados")
 }

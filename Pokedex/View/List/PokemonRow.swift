@@ -9,9 +9,9 @@ import SwiftUI
 ///   - o sprite;
 ///   - as tags de tipo, coloridas com `Theme.Color.forPokemonType(_:)`.
 struct PokemonRow: View {
-
+    
     let row: PokemonRowModel
-
+    
     var body: some View {
         HStack(spacing: Theme.Spacing.m) {
             PokemonImage(url: row.spriteURL)
@@ -21,7 +21,7 @@ struct PokemonRow: View {
                     Theme.Color.background,
                     in: Circle()
                 )
-
+            
             VStack(
                 alignment: .leading,
                 spacing: Theme.Spacing.xs
@@ -30,30 +30,35 @@ struct PokemonRow: View {
                     Text(row.name.capitalized)
                         .font(Theme.Font.rowTitle)
                         .foregroundStyle(Theme.Color.primaryText)
-
+                    
                     Text(row.number)
                         .font(Theme.Font.caption)
                         .foregroundStyle(Theme.Color.secondaryText)
                 }
-
+                
                 HStack(spacing: Theme.Spacing.xs) {
                     ForEach(row.types, id: \.self) { type in
-                        Text(type.capitalized)
-                            .font(Theme.Font.caption)
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, Theme.Spacing.s)
-                            .padding(.vertical, Theme.Spacing.xs)
-                            .background(
-                                Theme.Color.forPokemonType(type),
-                                in: Capsule()
-                            )
+                        PokemonTypeTag(type: type)
                     }
                 }
             }
-
-            Spacer(minLength: 0)
+            
+            Spacer()
         }
         .padding(.vertical, Theme.Spacing.xs)
     }
 }
 
+#Preview {
+    PokemonRow(
+        row: PokemonRowModel(
+            id: 6,
+            name: "Charizard",
+            number: "#006",
+            spriteURL: nil,
+            types: ["fire", "flying"],
+            detailURL: URL(string: "https://pokeapi.co/api/v2/pokemon/6")!
+        )
+    )
+    .padding()
+}
