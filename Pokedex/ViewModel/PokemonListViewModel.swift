@@ -2,13 +2,22 @@ import Foundation
 
 /// O que uma linha da lista precisa para se desenhar.
 struct PokemonRowModel: Identifiable, Equatable {
+    let id: Int
     let name: String
+    let number: String
+    let spriteURL: URL?
+    let types: [String]
     let detailURL: URL
 
-    var id: URL { detailURL }
-
-    init(summary: PokemonSummary) {
+    init(
+        summary: PokemonSummary,
+        detail: PokemonDetail
+    ) {
+        self.id = detail.id
         self.name = summary.name
+        self.number = String(format: "#%03d", detail.id)
+        self.spriteURL = detail.spriteURL
+        self.types = detail.types
         self.detailURL = summary.detailURL
     }
 }
@@ -28,6 +37,7 @@ final class PokemonListViewModel {
     private(set) var state: State = .loading
 
     private let fetchPage: FetchPokemonPageUseCase
+    private let fetchDetail: FetchPokemonDetailUseCase
     
     private var hasNextPage = true
     private var isLoadingNextPage = false
@@ -36,7 +46,10 @@ final class PokemonListViewModel {
 
     init() {
         let repository = RemotePokemonRepository(client: URLSessionHTTPClient())
+
         self.fetchPage = DefaultFetchPokemonPageUseCase(repository: repository)
+
+        self.fetchDetail = DefaultFetchPokemonDetailUseCase(repository: repository)
     }
 
     func load() async {
@@ -47,15 +60,31 @@ final class PokemonListViewModel {
     func reload() async {
         await loadFirstPage()
     }
+    
+    private func makeRows(from summaries: [PokemonSummary]) async throws -> [PokemonRowModel] {
+        var rows: [PokemonRowModel] = []
+
+        for summary in summaries {
+            let detail = try await fetchDetail.execute(url: summary.detailURL)
+
+            rows.append(PokemonRowModel(summary: summary,detail: detail)
+            )
+        }
+
+        return rows
+    }
 
     private func loadFirstPage() async {
         do {
             let page = try await fetchPage.execute(offset: 0)
-            let rows = page.items.map(PokemonRowModel.init(summary:))
+
+            let rows = try await makeRows(from: page.items)
+
             hasNextPage = page.hasNextPage
             state = rows.isEmpty ? .empty : .loaded(rows)
+
         } catch {
-            state = .failure(message: error.localizedDescription)
+            state = .failure( message: error.localizedDescription)
         }
     }
     
@@ -71,11 +100,9 @@ final class PokemonListViewModel {
             return
         }
         
-        let threshold = rows.count - 3
+        let threshold = rows.count - 5
         
-        guard index >= threshold,
-              hasNextPage,
-              !isLoadingNextPage else {
+        guard index >= threshold, hasNextPage, !isLoadingNextPage else {
             return
         }
         
@@ -83,13 +110,9 @@ final class PokemonListViewModel {
         defer { isLoadingNextPage = false }
         
         do {
-            let page = try await fetchPage.execute(
-                offset: rows.count
-            )
+            let page = try await fetchPage.execute( offset: rows.count)
             
-            let newRows = page.items.map(
-                PokemonRowModel.init(summary:)
-            )
+            let newRows = try await makeRows(from: page.items)
             
             let updatedRows = rows + newRows
             
