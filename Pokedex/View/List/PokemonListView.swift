@@ -12,25 +12,49 @@ struct PokemonListView: View {
     }
 
     var body: some View {
-        content
-            .navigationTitle("Pokédex")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Meu Time") {
-                        // TODO (Tarefa 4): apresentar a tela "Meu Time".
-                        notImplemented = "Meu Time"
-                    }
+        ZStack(alignment: .bottom) {
+            content
+
+            if let message = viewModel.paginationErrorMessage {
+                FeedbackToastView(message: message)
+                    .padding(.bottom, Theme.Spacing.m)
+            }
+        }
+        .animation(
+            .easeInOut,
+            value: viewModel.paginationErrorMessage
+        )
+        .navigationTitle("Pokédex")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Meu Time") {
+                    // TODO (Tarefa 4): apresentar a tela "Meu Time".
+                    notImplemented = "Meu Time"
                 }
             }
-            .alert(
-                notImplemented ?? "",
-                isPresented: .constant(notImplemented != nil)
-            ) {
-                Button("OK") { notImplemented = nil }
-            } message: {
-                Text("Tela ainda não implementada.")
+        }
+        .alert(
+            notImplemented ?? "",
+            isPresented: .constant(notImplemented != nil)
+        ) {
+            Button("OK") {
+                notImplemented = nil
             }
-            .task { await viewModel.load() }
+        } message: {
+            Text("Tela ainda não implementada.")
+        }
+        .task {
+            await viewModel.load()
+        }
+        .task(id: viewModel.paginationErrorMessage) {
+            guard viewModel.paginationErrorMessage != nil else {
+                return
+            }
+
+            try? await Task.sleep(for: .seconds(3))
+
+            viewModel.clearPaginationError()
+        }
     }
 
     @ViewBuilder
@@ -43,40 +67,64 @@ struct PokemonListView: View {
             list(rows)
 
         case .empty:
-            StateView(content: .empty(message: "Nenhum Pokémon encontrado."))
+            StateView(
+                content: .empty(
+                    message: "Nenhum Pokémon encontrado."
+                )
+            )
 
         case .failure(let message):
-            StateView(content: .failure(message: message)) {
-                Task { await viewModel.load() }
+            StateView(
+                content: .failure(message: message)
+            ) {
+                Task {
+                    await viewModel.load()
+                }
             }
         }
     }
 
-    private func list(_ rows: [PokemonRowModel]) -> some View {
+    private func list(
+        _ rows: [PokemonRowModel]
+    ) -> some View {
         List {
-            ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+            ForEach(
+                Array(rows.enumerated()),
+                id: \.element.id
+            ) { index, row in
                 Button {
                     // TODO (Tarefa 3): abrir a tela de detalhe deste Pokémon.
                     notImplemented = "Detalhe de \(row.name)"
                 } label: {
                     HStack {
                         PokemonRow(row: row)
+
                         Image(systemName: "chevron.right")
                             .font(Theme.Font.caption.bold())
-                            .foregroundStyle(Theme.Color.secondaryText)
+                            .foregroundStyle(
+                                Theme.Color.secondaryText
+                            )
                     }
                 }
                 .buttonStyle(.plain)
-                .task { await viewModel.loadNextPageIfNeeded(displayingRowAt: index) }
+                .task {
+                    await viewModel.loadNextPageIfNeeded(
+                        displayingRowAt: index
+                    )
+                }
             }
         }
         .listStyle(.insetGrouped)
-        .refreshable { await viewModel.reload() }
+        .refreshable {
+            await viewModel.reload()
+        }
     }
 }
 
 #Preview {
     NavigationStack {
-        PokemonListView(viewModel: PokemonListViewModel())
+        PokemonListView(
+            viewModel: PokemonListViewModel()
+        )
     }
 }

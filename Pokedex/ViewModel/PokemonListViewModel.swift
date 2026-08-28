@@ -31,6 +31,8 @@ final class PokemonListViewModel {
     
     private var hasNextPage = true
     private var isLoadingNextPage = false
+    
+    private(set) var paginationErrorMessage: String?
 
     init() {
         let repository = RemotePokemonRepository(client: URLSessionHTTPClient())
@@ -95,7 +97,11 @@ final class PokemonListViewModel {
             state = .loaded(updatedRows)
 
         } catch {
-            // TODO: ADD PAGINATION ERROR FEEDBACK
+            paginationErrorMessage = "Não foi possível carregar mais."
         }
+    }
+    
+    func clearPaginationError() {
+        paginationErrorMessage = nil
     }
 }
