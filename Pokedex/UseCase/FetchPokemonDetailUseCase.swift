@@ -1,7 +1,14 @@
+//
+//  FetchPokemonDetailUseCase.swift
+//  Pokedex
+//
+//  Created by izadora montenegro on 28/08/26.
+//
+
 import Foundation
 
 protocol FetchPokemonDetailUseCase {
-    func execute(id: Int) async throws -> PokemonDetail
+    func execute(url: URL) async throws -> PokemonDetail
 }
 
 final class DefaultFetchPokemonDetailUseCase: FetchPokemonDetailUseCase {
@@ -12,7 +19,7 @@ final class DefaultFetchPokemonDetailUseCase: FetchPokemonDetailUseCase {
         self.repository = repository
     }
 
-    func execute(id: Int) async throws -> PokemonDetail {
-        try await repository.fetchDetail(id: id)
+    func execute(url: URL) async throws -> PokemonDetail {
+        try await repository.fetchDetail(url: url)
     }
 }

@@ -9,6 +9,7 @@ struct PokemonPage: Equatable {
 
 protocol PokemonRepository {
     func fetchPage(offset: Int, limit: Int) async throws -> PokemonPage
+    func fetchDetail(url: URL) async throws -> PokemonDetail
 }
 
 final class RemotePokemonRepository: PokemonRepository {
@@ -32,6 +33,20 @@ final class RemotePokemonRepository: PokemonRepository {
             items: items,
             totalCount: dto.count,
             hasNextPage: dto.next != nil
+        )
+    }
+    
+    func fetchDetail(url: URL) async throws -> PokemonDetail {
+        let dto = try await client.get(
+            url,
+            as: PokemonDetailDTO.self
+        )
+
+        return PokemonDetail(
+            id: dto.id,
+            name: dto.name,
+            spriteURL: dto.sprites.frontDefault,
+            types: dto.types.map { $0.type.name }
         )
     }
 }
