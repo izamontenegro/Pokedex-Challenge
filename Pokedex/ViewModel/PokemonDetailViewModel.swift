@@ -18,27 +18,11 @@ final class PokemonDetailViewModel {
     private let pokemonID: Int
     private let fetchDetail: FetchPokemonDetailUseCase
 
-    init(
-        pokemonID: Int,
-        fetchDetail: FetchPokemonDetailUseCase
-    ) {
+    init(pokemonID: Int) {
         self.pokemonID = pokemonID
-        self.fetchDetail = fetchDetail
-    }
 
-    convenience init(pokemonID: Int) {
-        let repository = RemotePokemonRepository(
-            client: URLSessionHTTPClient()
-        )
-
-        let fetchDetail = DefaultFetchPokemonDetailUseCase(
-            repository: repository
-        )
-
-        self.init(
-            pokemonID: pokemonID,
-            fetchDetail: fetchDetail
-        )
+        let repository = RemotePokemonRepository(client: URLSessionHTTPClient())
+        self.fetchDetail = DefaultFetchPokemonDetailUseCase(repository: repository)
     }
 
     func load() async {

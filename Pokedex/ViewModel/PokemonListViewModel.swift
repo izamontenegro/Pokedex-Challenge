@@ -47,7 +47,6 @@ final class PokemonListViewModel {
     }
 
     private func makeRows(from items: [PokemonPageItem]) -> [PokemonRowModel] {
-
         items.map { item in
             PokemonRowModel(
                 id: item.detail.id,
@@ -65,13 +64,9 @@ final class PokemonListViewModel {
     private func loadFirstPage() async {
         do {
             let page = try await fetchPage.execute(offset: 0)
-
             let rows = makeRows(from: page.items)
-
             hasNextPage = page.hasNextPage
-
             state = rows.isEmpty ? .empty : .loaded(rows)
-
         } catch {
             state = .failure(message: error.localizedDescription)
         }
@@ -96,14 +91,10 @@ final class PokemonListViewModel {
 
         do {
             let page = try await fetchPage.execute(offset: rows.count)
-
             let newRows = makeRows(from: page.items)
-
             let updatedRows = rows + newRows
-
             hasNextPage = page.hasNextPage
             state = .loaded(updatedRows)
-
         } catch let error as NetworkError {
             paginationErrorMessage =
                 error.localizedDescription
