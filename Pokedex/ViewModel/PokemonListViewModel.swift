@@ -25,19 +25,16 @@ final class PokemonListViewModel {
     private(set) var state: State = .loading
 
     private let fetchPage: FetchPokemonPageUseCase
-    private let fetchDetail: FetchPokemonDetailUseCase
-    
+
     private var hasNextPage = true
     private var isLoadingNextPage = false
-    
+
     private(set) var paginationErrorMessage: String?
 
     init() {
         let repository = RemotePokemonRepository(client: URLSessionHTTPClient())
 
-        self.fetchPage = DefaultFetchPokemonPageUseCase(repository: repository)
-
-        self.fetchDetail = DefaultFetchPokemonDetailUseCase(repository: repository)
+        self.fetchPage = DefaultFetchPokemonPageUseCase( repository: repository)
     }
 
     func load() async {
@@ -48,80 +45,75 @@ final class PokemonListViewModel {
     func reload() async {
         await loadFirstPage()
     }
-    
-    private func makeRows(from summaries: [PokemonSummary]) async throws -> [PokemonRowModel] {
-        var rows: [PokemonRowModel] = []
 
-        for summary in summaries {
-            let detail = try await fetchDetail.execute(url: summary.detailURL)
+    private func makeRows(from items: [PokemonPageItem]) -> [PokemonRowModel] {
 
-            let row = PokemonRowModel(
-                id: detail.id,
-                name: PokemonNameFormatter.format(summary.name),
-                number: String(format: "#%03d", detail.id),
-                spriteURL: detail.spriteURL,
-                types: detail.types,
-                detailURL: summary.detailURL
+        items.map { item in
+            PokemonRowModel(
+                id: item.detail.id,
+                name: PokemonDataFormatter.name(
+                    item.summary.name
+                ),
+                number: PokemonDataFormatter.number(item.detail.id),
+                spriteURL: item.detail.spriteURL,
+                types: item.detail.types,
+                detailURL: item.summary.detailURL
             )
-
-            rows.append(row)
         }
-
-        return rows
     }
 
     private func loadFirstPage() async {
         do {
             let page = try await fetchPage.execute(offset: 0)
 
-            let rows = try await makeRows(from: page.items)
+            let rows = makeRows(from: page.items)
 
             hasNextPage = page.hasNextPage
+
             state = rows.isEmpty ? .empty : .loaded(rows)
 
         } catch {
-            state = .failure( message: error.localizedDescription)
+            state = .failure(message: error.localizedDescription)
         }
     }
-    
 
     // MARK: - TODO (Tarefa 1)
     //
     // A lista carrega só a primeira página (20 Pokémon).
     // Este método é chamado pela View a cada linha que aparece na tela.
-    func loadNextPageIfNeeded(
-        displayingRowAt index: Int
-    ) async {
+    func loadNextPageIfNeeded(displayingRowAt index: Int) async {
         guard case .loaded(let rows) = state else {
             return
         }
-        
+
         let threshold = rows.count - 5
-        
-        guard index >= threshold, hasNextPage, !isLoadingNextPage else {
-            return
-        }
-        
+
+        guard index >= threshold, hasNextPage, !isLoadingNextPage else { return }
+
         isLoadingNextPage = true
-        defer { isLoadingNextPage = false }
         
+        defer { isLoadingNextPage = false }
+
         do {
-            let page = try await fetchPage.execute( offset: rows.count)
-            
-            let newRows = try await makeRows(from: page.items)
-            
+            let page = try await fetchPage.execute(offset: rows.count)
+
+            let newRows = makeRows(from: page.items)
+
             let updatedRows = rows + newRows
-            
+
             hasNextPage = page.hasNextPage
             state = .loaded(updatedRows)
-            
+
         } catch let error as NetworkError {
-            paginationErrorMessage = error.localizedDescription
+            paginationErrorMessage =
+                error.localizedDescription
+
         } catch {
-            paginationErrorMessage = "Não foi possível carregar mais Pokémon."
+            paginationErrorMessage =
+                "Não foi possível carregar."
         }
     }
-    
+
     func clearPaginationError() {
         paginationErrorMessage = nil
     }

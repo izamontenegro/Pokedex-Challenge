@@ -7,3 +7,4 @@ struct PokemonSummary: Equatable {
     let name: String
     let detailURL: URL
 }
+
