@@ -5,7 +5,6 @@
 //  Created by izadora montenegro on 28/08/26.
 //
 
-
 import Foundation
 import Observation
 
@@ -16,8 +15,8 @@ final class PokemonTeamViewModel {
     enum State: Equatable {
         case empty
         case loaded(
-            members: [TeamMember],
-            summary: TeamSummary
+            summary: TeamSummary,
+            members: [TeamMember]
         )
     }
 
@@ -28,9 +27,7 @@ final class PokemonTeamViewModel {
     init() {
         let repository = UserDefaultsTeamRepository()
 
-        self.manageTeam = DefaultManageTeamUseCase(
-            repository: repository
-        )
+        self.manageTeam = DefaultManageTeamUseCase(repository: repository)
     }
 
     func load() {
@@ -41,14 +38,13 @@ final class PokemonTeamViewModel {
             return
         }
 
-        state = .loaded(
-            members: members,
-            summary: manageTeam.summary()
-        )
+        state = .loaded(summary: manageTeam.summary(), members: members)
     }
 
-    func remove(id: Int) {
-        manageTeam.remove(id: id)
+    func remove(_ members: [TeamMember]) {
+        for member in members {
+            manageTeam.remove(id: member.id)
+        }
         load()
     }
 }

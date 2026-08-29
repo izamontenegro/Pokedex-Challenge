@@ -10,6 +10,8 @@ enum Theme {
         static let secondaryText = SwiftUI.Color.secondary
         static let accent = SwiftUI.Color.indigo
         static let alert = SwiftUI.Color.yellow
+        static let success = SwiftUI.Color.green
+        static let error = SwiftUI.Color.red
 
         /// Cor  representando cada tipo de pokemon
         static func forPokemonType(_ type: String?) -> SwiftUI.Color {

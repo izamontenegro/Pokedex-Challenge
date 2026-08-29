@@ -13,39 +13,39 @@ struct PokemonRowModel: Identifiable, Equatable {
 @MainActor
 @Observable
 final class PokemonListViewModel {
-
+    
     enum State: Equatable {
         case loading
         case loaded([PokemonRowModel])
         case empty
         case failure(message: String)
     }
-
+    
     /// A View observa isto. O ViewModel nunca importa SwiftUI.
     private(set) var state: State = .loading
-
+    
     private let fetchPage: FetchPokemonPageUseCase
-
+    
     private var hasNextPage = true
     private var isLoadingNextPage = false
-
-    private(set) var paginationErrorMessage: String?
-
+    
+    private(set) var paginationFeedback: Feedback?
+    
     init() {
         let repository = RemotePokemonRepository(client: URLSessionHTTPClient())
-
+        
         self.fetchPage = DefaultFetchPokemonPageUseCase( repository: repository)
     }
-
+    
     func load() async {
         state = .loading
         await loadFirstPage()
     }
-
+    
     func reload() async {
         await loadFirstPage()
     }
-
+    
     private func makeRows(from items: [PokemonPageItem]) -> [PokemonRowModel] {
         items.map { item in
             PokemonRowModel(
@@ -60,7 +60,7 @@ final class PokemonListViewModel {
             )
         }
     }
-
+    
     private func loadFirstPage() async {
         do {
             let page = try await fetchPage.execute(offset: 0)
@@ -71,41 +71,40 @@ final class PokemonListViewModel {
             state = .failure(message: error.localizedDescription)
         }
     }
-
+    
     // MARK: - TODO (Tarefa 1)
     //
     // A lista carrega só a primeira página (20 Pokémon).
     // Este método é chamado pela View a cada linha que aparece na tela.
     func loadNextPageIfNeeded(displayingRowAt index: Int) async {
-        guard case .loaded(let rows) = state else {
-            return
-        }
-
+        guard case .loaded(let rows) = state else { return }
+        
         let threshold = rows.count - 5
-
-        guard index >= threshold, hasNextPage, !isLoadingNextPage else { return }
-
+        
+        guard
+            index >= threshold,
+            hasNextPage,
+            !isLoadingNextPage
+        else { return }
+        
         isLoadingNextPage = true
         
         defer { isLoadingNextPage = false }
-
+        
         do {
             let page = try await fetchPage.execute(offset: rows.count)
+            
             let newRows = makeRows(from: page.items)
+            
             let updatedRows = rows + newRows
             hasNextPage = page.hasNextPage
             state = .loaded(updatedRows)
-        } catch let error as NetworkError {
-            paginationErrorMessage =
-                error.localizedDescription
-
         } catch {
-            paginationErrorMessage =
-                "Não foi possível carregar."
+            paginationFeedback = Feedback(message: error.localizedDescription, type: .error)
         }
     }
-
-    func clearPaginationError() {
-        paginationErrorMessage = nil
+    
+    func clearPaginationFeedback() {
+        paginationFeedback = nil
     }
 }

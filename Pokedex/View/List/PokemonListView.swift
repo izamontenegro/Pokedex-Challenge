@@ -1,7 +1,5 @@
 import SwiftUI
 
-/// Lista de Pokémon. Serve de referência de estilo para as telas novas: a View
-/// só observa o estado do ViewModel e desenha, sem regra de negócio aqui dentro.
 struct PokemonListView: View {
 
     @State private var viewModel: PokemonListViewModel
@@ -11,39 +9,29 @@ struct PokemonListView: View {
     }
 
     var body: some View {
-        ZStack(alignment: .bottom) {
-            content
-
-            if let message = viewModel.paginationErrorMessage {
-                FeedbackToast(message: message)
-                    .padding(.bottom, Theme.Spacing.m)
+        content
+            .overlay(alignment: .bottom) {
+                if let feedback = viewModel.paginationFeedback {
+                    FeedbackToast(feedback: feedback)
+                        .padding(.bottom, Theme.Spacing.m)
+                }
             }
-        }
-        .animation(
-            .easeInOut,
-            value: viewModel.paginationErrorMessage
-        )
-        .navigationTitle("Pokédex")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                NavigationLink(
-                    "Meu Time",
-                    value: PokemonRoute.team
-                )
+            .animation(.easeInOut, value: viewModel.paginationFeedback)
+            .navigationTitle("Pokédex")
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink("Meu Time", value: PokemonRoute.team)
+                }
             }
-        }
-        .task {
-            await viewModel.load()
-        }
-        .task(id: viewModel.paginationErrorMessage) {
-            guard viewModel.paginationErrorMessage != nil else {
-                return
+            .task {
+                await viewModel.load()
             }
+            .task(id: viewModel.paginationFeedback) {
+                guard viewModel.paginationFeedback != nil else { return }
 
-            try? await Task.sleep(for: .seconds(3))
-
-            viewModel.clearPaginationError()
-        }
+                try? await Task.sleep(for: .seconds(3))
+                viewModel.clearPaginationFeedback()
+            }
     }
 
     @ViewBuilder
@@ -56,16 +44,10 @@ struct PokemonListView: View {
             list(rows)
 
         case .empty:
-            StateView(
-                content: .empty(
-                    message: "Nenhum Pokémon encontrado."
-                )
-            )
+            StateView(content: .empty(message: "Nenhum Pokémon encontrado."))
 
         case .failure(let message):
-            StateView(
-                content: .failure(message: message)
-            ) {
+            StateView(content: .failure(message: message)) {
                 Task {
                     await viewModel.load()
                 }
@@ -73,24 +55,14 @@ struct PokemonListView: View {
         }
     }
 
-    private func list(
-        _ rows: [PokemonRowModel]
-    ) -> some View {
+    private func list(_ rows: [PokemonRowModel]) -> some View {
         List {
-            ForEach(
-                Array(rows.enumerated()),
-                id: \.element.id
-            ) { index, row in
-
-                NavigationLink(
-                    value: PokemonRoute.detail(id: row.id)
-                ) {
+            ForEach(Array(rows.enumerated()), id: \.element.id) { index, row in
+                NavigationLink(value: PokemonRoute.detail(id: row.id)) {
                     PokemonRow(row: row)
                 }
                 .task {
-                    await viewModel.loadNextPageIfNeeded(
-                        displayingRowAt: index
-                    )
+                    await viewModel.loadNextPageIfNeeded(displayingRowAt: index)
                 }
             }
         }
@@ -103,8 +75,6 @@ struct PokemonListView: View {
 
 #Preview {
     NavigationStack {
-        PokemonListView(
-            viewModel: PokemonListViewModel()
-        )
+        PokemonListView(viewModel: PokemonListViewModel())
     }
 }

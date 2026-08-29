@@ -24,7 +24,7 @@ final class PokemonDetailViewModel {
     private let fetchDetail: FetchPokemonDetailUseCase
     private let manageTeam: ManageTeamUseCase
     
-    private(set) var teamFeedbackMessage: String?
+    private(set) var teamFeedback: Feedback?
 
     init(pokemonID: Int) {
         self.pokemonID = pokemonID
@@ -62,26 +62,44 @@ final class PokemonDetailViewModel {
     }
     
     func addToTeam() {
-        guard case .loaded(let pokemon) = state else {
-            return
+            guard case .loaded(let pokemon) = state else { return }
+
+            let member = TeamMember(
+                id: pokemon.id,
+                name: pokemon.name,
+                spriteURL: pokemon.spriteURL,
+                types: pokemon.types
+            )
+
+            do {
+                try manageTeam.add(member)
+                teamFeedback = Feedback(
+                    message: "\(PokemonDataFormatter.name(pokemon.name)) foi adicionado ao time.",
+                    type: .success
+                )
+            } catch let error as TeamError {
+                switch error {
+                case .alreadyInTeam(let name):
+                    teamFeedback = Feedback(
+                        message: "\(PokemonDataFormatter.name(name)) já está no seu time.",
+                        type: .warning
+                    )
+
+                case .teamFull:
+                    teamFeedback = Feedback(
+                        message: "Seu time já possui 6 Pokémon.",
+                        type: .warning
+                    )
+                }
+            } catch {
+                teamFeedback = Feedback(
+                    message: error.localizedDescription,
+                    type: .error
+                )
+            }
         }
 
-        let member = TeamMember(
-            id: pokemon.id,
-            name: pokemon.name,
-            spriteURL: pokemon.spriteURL,
-            types: pokemon.types
-        )
-
-        do {
-            try manageTeam.add(member)
-            teamFeedbackMessage = "\(PokemonDataFormatter.name(pokemon.name)) foi adicionado ao time."
-        } catch {
-            teamFeedbackMessage = error.localizedDescription
+        func clearTeamFeedback() {
+            teamFeedback = nil
         }
     }
-
-    func clearTeamFeedback() {
-        teamFeedbackMessage = nil
-    }
-}

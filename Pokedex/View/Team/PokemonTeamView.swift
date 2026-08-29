@@ -5,7 +5,6 @@
 //  Created by izadora montenegro on 28/08/26.
 //
 
-
 import SwiftUI
 
 struct PokemonTeamView: View {
@@ -28,82 +27,52 @@ struct PokemonTeamView: View {
     private var content: some View {
         switch viewModel.state {
         case .empty:
-            StateView(
-                content: .empty(
-                    message: "Seu time ainda está vazio."
-                )
-            )
+            StateView(content: .empty(message: "Seu time está vazio."))
 
-        case .loaded(let members, let summary):
+        case .loaded(let summary, let members):
             List {
                 teamSummary(summary)
-
-                Section("Pokémon") {
-                    ForEach(members) { member in
-                        TeamMemberRow(member: member)
-                    }
-                    .onDelete { indexSet in
-                        removeMembers(
-                            at: indexSet,
-                            from: members
-                        )
-                    }
+                
+                ForEach(members) { member in
+                    TeamMemberRow(member: member)
                 }
+                .onDelete { indexSet in
+                    let membersToRemove = indexSet.map { members[$0] }
+                    viewModel.remove(membersToRemove)
+                }
+                
             }
-            .listStyle(.insetGrouped)
+            .listStyle(.sidebar)
         }
     }
 
-    private func teamSummary(
-        _ summary: TeamSummary
-    ) -> some View {
-        Section("Resumo") {
-            VStack(
-                alignment: .leading,
-                spacing: Theme.Spacing.m
-            ) {
-                Text(
-                    "\(summary.count) de \(Team.maxSize) Pokémon"
-                )
+    private func teamSummary(_ summary: TeamSummary) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.m) {
+            Text("\(summary.count)/\(Team.maxSize) Pokémons")
                 .font(Theme.Font.rowTitle)
-
-                VStack(
-                    alignment: .leading,
-                    spacing: Theme.Spacing.s
-                ) {
-                    Text("Tipos cobertos")
-                        .font(Theme.Font.caption)
-                        .foregroundStyle(
-                            Theme.Color.secondaryText
-                        )
-
-                    ScrollView(
-                        .horizontal,
-                        showsIndicators: false
-                    ) {
-                        HStack(spacing: Theme.Spacing.xs) {
-                            ForEach(
-                                summary.coveredTypes,
-                                id: \.self
-                            ) { type in
-                                PokemonTypeTag(type: type)
-                            }
+            
+            VStack(alignment: .leading, spacing: Theme.Spacing.s) {
+                Text("Tipos do time")
+                    .font(Theme.Font.caption)
+                    .foregroundStyle(Theme.Color.secondaryText)
+                
+                ScrollView(.horizontal,showsIndicators: false) {
+                    HStack(spacing: Theme.Spacing.xs) {
+                        ForEach(summary.coveredTypes, id: \.self) { type in
+                            PokemonTypeTag(type: type)
                         }
                     }
                 }
             }
-            .padding(.vertical, Theme.Spacing.s)
         }
+        .padding(.vertical, Theme.Spacing.s)
     }
+}
 
-    private func removeMembers(
-        at indexSet: IndexSet,
-        from members: [TeamMember]
-    ) {
-        for index in indexSet {
-            viewModel.remove(
-                id: members[index].id
-            )
-        }
+#Preview {
+    NavigationStack {
+        PokemonTeamView(
+            viewModel: PokemonTeamViewModel()
+        )
     }
 }

@@ -17,17 +17,23 @@ struct PokemonDetailView: View {
     var body: some View {
         content
             .overlay(alignment: .bottom) {
-                if let message = viewModel.teamFeedbackMessage {
-                    FeedbackToast(message: message)
+                if let feedback = viewModel.teamFeedback {
+                    FeedbackToast(feedback: feedback)
                         .padding(.bottom, Theme.Spacing.m)
                 }
             }
             .animation(
                 .easeInOut,
-                value: viewModel.teamFeedbackMessage
+                value: viewModel.teamFeedback
             )
             .task {
                 await viewModel.load()
+            }
+            .task(id: viewModel.teamFeedback) {
+                guard viewModel.teamFeedback != nil else { return }
+                
+                try? await Task.sleep(for: .seconds(3))
+                viewModel.clearTeamFeedback()
             }
     }
 

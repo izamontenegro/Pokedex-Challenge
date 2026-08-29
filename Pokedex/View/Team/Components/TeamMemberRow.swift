@@ -21,22 +21,12 @@ struct TeamMemberRow: View {
                     in: Circle()
                 )
 
-            VStack(
-                alignment: .leading,
-                spacing: Theme.Spacing.xs
-            ) {
-                Text(
-                    PokemonDataFormatter.name(
-                        member.name
-                    )
-                )
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text(PokemonDataFormatter.name(member.name))
                 .font(Theme.Font.rowTitle)
 
                 HStack(spacing: Theme.Spacing.xs) {
-                    ForEach(
-                        member.types,
-                        id: \.self
-                    ) { type in
+                    ForEach(member.types, id: \.self) { type in
                         PokemonTypeTag(type: type)
                     }
                 }
