@@ -73,6 +73,7 @@
 		365FDB9F3043157B00B7B847 /* FetchPokemonEvolutionsUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FetchPokemonEvolutionsUseCase.swift; sourceTree = "<group>"; };
 		365FDBA330431D0C00B7B847 /* AppContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppContainer.swift; sourceTree = "<group>"; };
 		365FDBA53043239000B7B847 /* ImageCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCache.swift; sourceTree = "<group>"; };
+		365FDBAB30432F0E00B7B847 /* Entrega.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = Entrega.md; sourceTree = "<group>"; };
 		3673CC4D3041F16700934576 /* CurvedBackgroundShape.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurvedBackgroundShape.swift; sourceTree = "<group>"; };
 		3673CC513042044500934576 /* PokemonTeamViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PokemonTeamViewModel.swift; sourceTree = "<group>"; };
 		3673CC543042045500934576 /* PokemonTeamView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PokemonTeamView.swift; sourceTree = "<group>"; };
@@ -332,6 +333,7 @@
 		FA4733FBA6D7F86C26CFC725 = {
 			isa = PBXGroup;
 			children = (
+				365FDBAB30432F0E00B7B847 /* Entrega.md */,
 				2E9CCE175FE525BFFC42532C /* Products */,
 				D01F9994ACF6DCD496B8D854 /* Frameworks */,
 				2BA94F2AC2B5A1D1E142340B /* Pokedex */,
