@@ -68,11 +68,3 @@ struct PokemonTeamView: View {
         .padding(.vertical, Theme.Spacing.s)
     }
 }
-
-#Preview {
-    NavigationStack {
-        PokemonTeamView(
-            viewModel: PokemonTeamViewModel()
-        )
-    }
-}

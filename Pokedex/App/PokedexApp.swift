@@ -7,27 +7,30 @@ enum PokemonRoute: Hashable {
 
 @main
 struct PokedexApp: App {
+
+    private let container = AppContainer()
+
     var body: some Scene {
         WindowGroup {
             NavigationStack {
-                PokemonListView(viewModel: PokemonListViewModel())
-                    .navigationDestination(
-                        for: PokemonRoute.self
-                    ) { route in
-                        switch route {
-                        case .detail(let id):
-                            PokemonDetailView(
-                                viewModel: PokemonDetailViewModel(
-                                    pokemonID: id
-                                )
+                PokemonListView(
+                    viewModel: container.makePokemonListViewModel()
+                )
+                .navigationDestination(for: PokemonRoute.self) { route in
+                    switch route {
+                    case .detail(let id):
+                        PokemonDetailView(
+                            viewModel: container.makePokemonDetailViewModel(
+                                pokemonID: id
                             )
-                            
-                        case .team:
-                            PokemonTeamView(
-                                viewModel: PokemonTeamViewModel()
-                            )
-                        }
+                        )
+
+                    case .team:
+                        PokemonTeamView(
+                            viewModel: container.makePokemonTeamViewModel()
+                        )
                     }
+                }
             }
         }
     }

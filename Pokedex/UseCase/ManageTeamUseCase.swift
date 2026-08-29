@@ -1,18 +1,8 @@
 import Foundation
 
-enum TeamError: LocalizedError, Equatable {
+enum TeamError: Error, Equatable {
     case alreadyInTeam(name: String)
     case teamFull
-
-    var errorDescription: String? {
-        switch self {
-        case .alreadyInTeam(let name):
-            return "\(name) já está no seu time."
-
-        case .teamFull:
-            return "Seu time já possui 6 Pokémon."
-        }
-    }
 }
 
 enum Team {

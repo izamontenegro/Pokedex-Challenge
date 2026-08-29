@@ -56,8 +56,7 @@ struct PokemonRow: View {
             name: "Charizard",
             number: "#006",
             spriteURL: nil,
-            types: ["fire", "flying"],
-            detailURL: URL(string: "https://pokeapi.co/api/v2/pokemon/6")!
+            types: ["fire", "flying"]
         )
     )
     .padding()

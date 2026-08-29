@@ -7,7 +7,6 @@ struct PokemonRowModel: Identifiable, Equatable {
     let number: String
     let spriteURL: URL?
     let types: [String]
-    let detailURL: URL
 }
 
 @MainActor
@@ -24,17 +23,15 @@ final class PokemonListViewModel {
     /// A View observa isto. O ViewModel nunca importa SwiftUI.
     private(set) var state: State = .loading
     
-    private let fetchPage: FetchPokemonPageUseCase
+    private let fetchPageUseCase: FetchPokemonPageUseCase
     
     private var hasNextPage = true
     private var isLoadingNextPage = false
     
     private(set) var paginationFeedback: Feedback?
     
-    init() {
-        let repository = RemotePokemonRepository(client: URLSessionHTTPClient())
-        
-        self.fetchPage = DefaultFetchPokemonPageUseCase( repository: repository)
+    init(fetchPageUseCase: FetchPokemonPageUseCase) {
+        self.fetchPageUseCase = fetchPageUseCase
     }
     
     func load() async {
@@ -55,15 +52,14 @@ final class PokemonListViewModel {
                 ),
                 number: PokemonDataFormatter.number(item.detail.id),
                 spriteURL: item.detail.spriteURL,
-                types: item.detail.types,
-                detailURL: item.summary.detailURL
+                types: item.detail.types
             )
         }
     }
     
     private func loadFirstPage() async {
         do {
-            let page = try await fetchPage.execute(offset: 0)
+            let page = try await fetchPageUseCase.execute(offset: 0)
             let rows = makeRows(from: page.items)
             hasNextPage = page.hasNextPage
             state = rows.isEmpty ? .empty : .loaded(rows)
@@ -92,7 +88,7 @@ final class PokemonListViewModel {
         defer { isLoadingNextPage = false }
         
         do {
-            let page = try await fetchPage.execute(offset: rows.count)
+            let page = try await fetchPageUseCase.execute(offset: rows.count)
             
             let newRows = makeRows(from: page.items)
             

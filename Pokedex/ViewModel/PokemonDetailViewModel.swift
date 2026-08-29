@@ -23,40 +23,25 @@ final class PokemonDetailViewModel {
     private(set) var teamFeedback: Feedback?
 
     private let pokemonID: Int
-    private let fetchDetail: FetchPokemonDetailUseCase
-    private let fetchEvolutions: FetchPokemonEvolutionsUseCase
-    private let manageTeam: ManageTeamUseCase
+    private let fetchDetailUseCase: FetchPokemonDetailUseCase
+    private let fetchEvolutionsUseCase: FetchPokemonEvolutionsUseCase
+    private let manageTeamUseCase: ManageTeamUseCase
 
-    init(pokemonID: Int) {
+    init(pokemonID: Int, fetchDetailUseCase: FetchPokemonDetailUseCase, manageTeamUseCase: ManageTeamUseCase, fetchEvolutionsUseCase: FetchPokemonEvolutionsUseCase) {
         self.pokemonID = pokemonID
-
-        let pokemonRepository = RemotePokemonRepository(
-            client: URLSessionHTTPClient()
-        )
-
-        let teamRepository = UserDefaultsTeamRepository()
-
-        self.fetchDetail = DefaultFetchPokemonDetailUseCase(
-            repository: pokemonRepository
-        )
-
-        self.fetchEvolutions = DefaultFetchPokemonEvolutionsUseCase(
-            repository: pokemonRepository
-        )
-
-        self.manageTeam = DefaultManageTeamUseCase(
-            repository: teamRepository
-        )
+        self.fetchDetailUseCase = fetchDetailUseCase
+        self.manageTeamUseCase = manageTeamUseCase
+        self.fetchEvolutionsUseCase = fetchEvolutionsUseCase
     }
     
     func load() async {
         state = .loading
 
         do {
-            let pokemon = try await fetchDetail.execute(id: pokemonID)
+            let pokemon = try await fetchDetailUseCase.execute(id: pokemonID)
             state = .loaded(pokemon)
 
-            evolutions = (try? await fetchEvolutions.execute(id: pokemonID)) ?? []
+            evolutions = (try? await fetchEvolutionsUseCase.execute(id: pokemonID)) ?? []
         } catch {
             state = .failure(message: error.localizedDescription)
         }
@@ -73,7 +58,7 @@ final class PokemonDetailViewModel {
         )
 
         do {
-            try manageTeam.add(member)
+            try manageTeamUseCase.add(member)
 
             teamFeedback = Feedback(
                 message: "\(PokemonDataFormatter.name(pokemon.name)) foi adicionado ao time.",

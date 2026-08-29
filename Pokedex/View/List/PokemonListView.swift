@@ -72,9 +72,3 @@ struct PokemonListView: View {
         }
     }
 }
-
-#Preview {
-    NavigationStack {
-        PokemonListView(viewModel: PokemonListViewModel())
-    }
-}

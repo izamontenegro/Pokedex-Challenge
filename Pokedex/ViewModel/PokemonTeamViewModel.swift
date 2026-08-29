@@ -22,28 +22,26 @@ final class PokemonTeamViewModel {
 
     private(set) var state: State = .empty
 
-    private let manageTeam: ManageTeamUseCase
+    private let manageTeamUseCase: ManageTeamUseCase
 
-    init() {
-        let repository = UserDefaultsTeamRepository()
-
-        self.manageTeam = DefaultManageTeamUseCase(repository: repository)
+    init(manageTeamUseCase: ManageTeamUseCase) {
+        self.manageTeamUseCase = manageTeamUseCase
     }
 
     func load() {
-        let members = manageTeam.currentTeam()
+        let members = manageTeamUseCase.currentTeam()
 
         guard !members.isEmpty else {
             state = .empty
             return
         }
 
-        state = .loaded(summary: manageTeam.summary(), members: members)
+        state = .loaded(summary: manageTeamUseCase.summary(), members: members)
     }
 
     func remove(_ members: [TeamMember]) {
         for member in members {
-            manageTeam.remove(id: member.id)
+            manageTeamUseCase.remove(id: member.id)
         }
         load()
     }
