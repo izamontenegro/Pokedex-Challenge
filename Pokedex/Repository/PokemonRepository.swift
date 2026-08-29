@@ -10,6 +10,7 @@ struct PokemonPage: Equatable {
 protocol PokemonRepository {
     func fetchPage(offset: Int, limit: Int) async throws -> PokemonPage
     func fetchDetail(url: URL) async throws -> PokemonDetail
+    func fetchEvolutions(pokemonID: Int) async throws -> [String]
 }
 
 final class RemotePokemonRepository: PokemonRepository {
@@ -58,5 +59,23 @@ final class RemotePokemonRepository: PokemonRepository {
             types: dto.types.map { $0.type.name },
             stats: stats
         )
+    }
+    
+    func fetchEvolutions(pokemonID: Int) async throws -> [String] {
+        let species = try await client.get(
+            PokeAPI.pokemonSpecies(id: pokemonID),
+            as: PokemonSpeciesDTO.self
+        )
+
+        let evolutionChain = try await client.get(
+            species.evolutionChain.url,
+            as: PokemonEvolutionChainDTO.self
+        )
+
+        return evolutionNames(from: evolutionChain.chain)
+    }
+
+    private func evolutionNames(from chain: PokemonEvolutionChainDTO.Chain) -> [String] {
+        [chain.species.name] + chain.evolvesTo.flatMap { evolutionNames(from: $0) }
     }
 }

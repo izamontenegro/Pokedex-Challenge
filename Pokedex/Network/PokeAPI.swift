@@ -21,4 +21,8 @@ enum PokeAPI {
     static func pokemon(id: Int) -> URL {
         baseURL.appendingPathComponent("pokemon").appendingPathComponent(String(id))
     }
+    
+    static func pokemonSpecies(id: Int) -> URL {
+        baseURL.appendingPathComponent("pokemon-species").appendingPathComponent(String(id))
+    }
 }

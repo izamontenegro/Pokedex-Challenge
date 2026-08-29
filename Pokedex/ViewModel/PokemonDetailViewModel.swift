@@ -19,12 +19,13 @@ final class PokemonDetailViewModel {
     }
 
     private(set) var state: State = .loading
+    private(set) var evolutions: [String] = []
+    private(set) var teamFeedback: Feedback?
 
     private let pokemonID: Int
     private let fetchDetail: FetchPokemonDetailUseCase
+    private let fetchEvolutions: FetchPokemonEvolutionsUseCase
     private let manageTeam: ManageTeamUseCase
-    
-    private(set) var teamFeedback: Feedback?
 
     init(pokemonID: Int) {
         self.pokemonID = pokemonID
@@ -39,6 +40,10 @@ final class PokemonDetailViewModel {
             repository: pokemonRepository
         )
 
+        self.fetchEvolutions = DefaultFetchPokemonEvolutionsUseCase(
+            repository: pokemonRepository
+        )
+
         self.manageTeam = DefaultManageTeamUseCase(
             repository: teamRepository
         )
@@ -48,58 +53,55 @@ final class PokemonDetailViewModel {
         state = .loading
 
         do {
-            let pokemon = try await fetchDetail.execute(
-                id: pokemonID
-            )
-
+            let pokemon = try await fetchDetail.execute(id: pokemonID)
             state = .loaded(pokemon)
 
+            evolutions = (try? await fetchEvolutions.execute(id: pokemonID)) ?? []
         } catch {
-            state = .failure(
-                message: error.localizedDescription
-            )
+            state = .failure(message: error.localizedDescription)
         }
     }
     
     func addToTeam() {
-            guard case .loaded(let pokemon) = state else { return }
+        guard case .loaded(let pokemon) = state else { return }
 
-            let member = TeamMember(
-                id: pokemon.id,
-                name: pokemon.name,
-                spriteURL: pokemon.spriteURL,
-                types: pokemon.types
+        let member = TeamMember(
+            id: pokemon.id,
+            name: pokemon.name,
+            spriteURL: pokemon.spriteURL,
+            types: pokemon.types
+        )
+
+        do {
+            try manageTeam.add(member)
+
+            teamFeedback = Feedback(
+                message: "\(PokemonDataFormatter.name(pokemon.name)) foi adicionado ao time.",
+                type: .success
             )
-
-            do {
-                try manageTeam.add(member)
+        } catch let error as TeamError {
+            switch error {
+            case .alreadyInTeam(let name):
                 teamFeedback = Feedback(
-                    message: "\(PokemonDataFormatter.name(pokemon.name)) foi adicionado ao time.",
-                    type: .success
+                    message: "\(PokemonDataFormatter.name(name)) já está no seu time.",
+                    type: .warning
                 )
-            } catch let error as TeamError {
-                switch error {
-                case .alreadyInTeam(let name):
-                    teamFeedback = Feedback(
-                        message: "\(PokemonDataFormatter.name(name)) já está no seu time.",
-                        type: .warning
-                    )
 
-                case .teamFull:
-                    teamFeedback = Feedback(
-                        message: "Seu time já possui 6 Pokémon.",
-                        type: .warning
-                    )
-                }
-            } catch {
+            case .teamFull:
                 teamFeedback = Feedback(
-                    message: error.localizedDescription,
-                    type: .error
+                    message: "Seu time já possui 6 Pokémon.",
+                    type: .warning
                 )
             }
-        }
-
-        func clearTeamFeedback() {
-            teamFeedback = nil
+        } catch {
+            teamFeedback = Feedback(
+                message: error.localizedDescription,
+                type: .error
+            )
         }
     }
+
+    func clearTeamFeedback() {
+        teamFeedback = nil
+    }
+}
